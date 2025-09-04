@@ -5,33 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AutoCloser ROI Calculator</title>
   <meta name="description" content="Estimate revenue lift and ROI from AutoCloser follow-up automation." />
+
   <style>
-    :root {
-      --bg: #0b1020;
-      --panel: #121833;
-      --accent: #31d0ff;
-      --accent-2: #9be8ff;
-      --text: #f3f6ff;
-      --muted: #a7b1c8;
-      --danger: #ff6b6b;
-      --ok: #5cff9d;
-      --shadow: 0 10px 25px rgba(0,0,0,.35);
-      --radius: 16px;
+    :root{
+      --bg:#0b1020; --panel:#111733; --panel-2:#0f1530;
+      --accent:#31d0ff; --accent-2:#9be8ff; --text:#f3f6ff; --muted:#a7b1c8;
+      --radius:16px; --shadow:0 10px 25px rgba(0,0,0,.35);
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--text);
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans";
+      color:var(--text);
       background:
         radial-gradient(1200px 600px at 80% -10%, rgba(49,208,255,.2), transparent 60%),
         radial-gradient(1000px 800px at -10% 110%, rgba(155,232,255,.15), transparent 60%),
         var(--bg);
     }
-     body.embed { background: transparent !important; }
+    /* make background transparent when embedded via ?embed=1 */
+    body.embed { background: transparent !important; }
+
+    /* --- centered page container --- */
+    header{max-width:900px;margin:40px auto 14px;padding:0 20px;text-align:center}
+    header h1{margin:0 0 6px;font-size:2.05rem;color:var(--accent)}
+    header p{margin:0;color:var(--muted)}
+
+    main.wrap{
+      max-width:900px; margin:0 auto 60px; padding:0 20px;
+      display:grid; gap:24px;
+    }
+    @media (min-width:900px){ main.wrap{ grid-template-columns:1fr 1fr; } }
+
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    .card h2{margin:0 0 16px;font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2)}
+
+    /* inputs */
+    .grid{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (max-width:620px){ .grid{ grid-template-columns:1fr } }
+
+    .control{
+      display:flex;flex-direction:column;justify-content:flex-start;
+      background:var(--panel-2);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;padding:14px;
+      min-height:116px; /* keeps rows even if labels wrap */
+    }
+    .label{font-size:.9rem;font-weight:700;margin-bottom:10px;line-height:1.2}
+
+    input[type="number"]{
+      width:100%;appearance:textfield;background:#0d1430;
+      border:1px solid rgba(255,255,255,.16);color:var(--text);
+      border-radius:12px;padding:18px 20px;font-size:1.15rem;line-height:1.2;min-height:58px;outline:none
+    }
+    input[type="number"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(49,208,255,.18)}
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+    input[type="number"]{ -moz-appearance:textfield; }
+    @media (max-width:520px){ input[type="number"]{ font-size:1.2rem; padding:20px } }
+
+    .actions{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
+    button{
+      background:linear-gradient(180deg,var(--accent),#1a9fc2);
+      color:#041018;border:none;padding:14px 18px;border-radius:12px;font-weight:800;cursor:pointer;
+      box-shadow:0 8px 18px rgba(49,208,255,.25)
+    }
+    button.secondary{background:transparent;color:var(--accent-2);border:1px solid rgba(155,232,255,.45);box-shadow:none}
+
+    /* results */
+    .kpis{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+    @media (max-width:620px){ .kpis{ grid-template-columns:1fr } }
+    .kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+    .kpi .label{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.12em}
+    .kpi .value{font-size:1.5rem;font-weight:900;margin-top:6px}
+    .kpi .sub{color:var(--muted);font-size:.86rem;margin-top:4px}
+    .note{margin-top:12px;color:var(--muted);font-size:.9rem;text-align:center}
   </style>
 
+  <!-- embed helper: add .embed when ?embed=1 -->
   <script>
     (function(){
       const p = new URLSearchParams(location.search);
@@ -43,235 +100,121 @@
     })();
   </script>
 </head>
-    header { max-width: 1100px; margin: 40px auto 10px; padding: 0 20px; }
-    header h1 { font-size: 2rem; margin: 0; letter-spacing: .4px; }
-    header p { color: var(--muted); margin: 8px 0 0; }
 
-    .wrap { max-width: 1100px; margin: 0 auto 60px; padding: 0 20px; display: grid; gap: 24px; grid-template-columns: 1fr; }
-    @media (min-width: 980px) {
-      .wrap { grid-template-columns: 1.05fr .95fr; }
-    }
-
-    .card { background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .card h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .12em; color: var(--accent-2); margin: 0 0 14px; }
-    .card .inner { padding: 22px; }
-
-    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 680px) { .grid { grid-template-columns: 1fr 1fr; } }
-
-    label { display: block; font-size: .88rem; color: var(--muted); margin: 0 0 6px; }
-    .row { display: flex; align-items: center; gap: 10px; }
-    input[type="number"] {
-      width: 100%;
-      background: #0f1530;
-      border: 1px solid rgba(255,255,255,.12);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 1rem;
-      outline: none;
-      box-shadow: inset 0 0 0 2px transparent;
-      transition: box-shadow .15s ease, border-color .15s ease, background .2s;
-    }
-    input[type="number"]:focus { border-color: var(--accent); box-shadow: inset 0 0 0 2px rgba(49,208,255,.25); }
-
-    .hint { font-size: .8rem; color: var(--muted); }
-
-    .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
-    button {
-      background: linear-gradient(180deg, var(--accent), #1a9fc2);
-      color: #041018;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(49,208,255,.25);
-    }
-    button.secondary { background: transparent; color: var(--accent-2); border: 1px solid rgba(155,232,255,.45); box-shadow: none; }
-
-    .kpis { display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 680px) { .kpis { grid-template-columns: 1fr 1fr; } }
-
-    .kpi { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; padding: 16px; }
-    .kpi .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; }
-    .kpi .value { font-size: 1.4rem; font-weight: 800; margin-top: 6px; }
-    .kpi .sub { color: var(--muted); font-size: .85rem; margin-top: 2px; }
-
-    .tier { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-    .tier .box { background: rgba(255,255,255,.02); border: 1px dashed rgba(255,255,255,.12); padding: 14px; border-radius: 12px; }
-    .muted { color: var(--muted); }
-    .note { margin-top: 10px; font-size: .85rem; color: var(--muted); }
-
-    footer { max-width: 1100px; margin: 20px auto 60px; padding: 0 20px; color: var(--muted); font-size: .9rem; }
-    a.cta { color: var(--accent); text-decoration: none; font-weight: 700; }
-  </style>
-</head>
 <body>
   <header>
     <h1>AutoCloser ROI Calculator</h1>
-    <p>Estimate your additional booked jobs and ROI when AutoCloser follows up on every lead (Day 0, 1, 3, 5) by SMS & email.</p>
+    <p>Estimate your additional booked clients and ROI when AutoCloser follows up on every lead (Day 0, 1, 3, 5) by SMS & email.</p>
   </header>
 
   <main class="wrap">
-    <!-- INPUTS -->
-    <section class="card">
-      <div class="inner">
-        <h2>Inputs</h2>
-        <div class="grid">
-          <div>
-            <label for="avgValue">Average Client Value ($)</label>
-            <input id="avgValue" type="number" min="0" step="50" value="3000" />
-            <div class="hint">Typical revenue from one customer</div>
-          </div>
-          <div>
-            <label for="leads">Leads per Month</label>
-            <input id="leads" type="number" min="0" step="5" value="100" />
-            <div class="hint">Total inbound leads you receive</div>
-          </div>
-          <div>
-            <label for="rateNow">Current Close Rate (%)</label>
-            <input id="rateNow" type="number" min="0" max="100" step="1" value="30" />
-            <div class="hint">What % of leads you currently convert</div>
-          </div>
-          <div>
-            <label for="rateWith">Close Rate with AutoCloser (%)</label>
-            <input id="rateWith" type="number" min="0" max="100" step="1" value="40" />
-            <div class="hint">Conservative lift: +5–15% depending on speed of follow-up</div>
-          </div>
+    <!-- Inputs -->
+    <section class="card" aria-labelledby="inputsTitle">
+      <h2 id="inputsTitle">Inputs</h2>
+      <div class="grid">
+        <div class="control">
+          <div class="label">Average Client Value ($)</div>
+          <input id="avgValue" type="number" inputmode="decimal" value="3000" />
         </div>
-        <div class="actions">
-          <button id="calc">Calculate ROI</button>
-          <button class="secondary" id="reset">Reset</button>
-          <span class="muted" id="error"></span>
+        <div class="control">
+          <div class="label">Leads per Month</div>
+          <input id="leads" type="number" inputmode="numeric" value="100" />
         </div>
+        <div class="control">
+          <div class="label">Current Close Rate (%)</div>
+          <input id="rateNow" type="number" inputmode="numeric" value="30" />
+        </div>
+        <div class="control">
+          <div class="label">Close Rate with AutoCloser (%)</div>
+          <input id="rateWith" type="number" inputmode="numeric" value="40" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="calc">Calculate ROI</button>
+        <button class="secondary" id="reset">Reset</button>
       </div>
     </section>
 
-    <!-- OUTPUTS -->
-    <section class="card">
-      <div class="inner">
-        <h2>Results</h2>
-        <div class="kpis">
-          <div class="kpi">
-            <div class="label">Additional Clients / Month</div>
-            <div class="value" id="addJobs">—</div>
-            <div class="sub" id="jobsDetail">From improved close rate</div>
-          </div>
-          <div class="kpi">
-            <div class="label">Extra Revenue / Month</div>
-            <div class="value" id="extraRevenue">—</div>
-            <div class="sub" id="revDetail">Based on your average move value</div>
-          </div>
-          <div class="kpi">
-            <div class="label">Recommended Plan</div>
-            <div class="value" id="planName">—</div>
-            <div class="sub" id="planDetail">AutoCloser tier & price</div>
-          </div>
-          <div class="kpi">
-            <div class="label">ROI</div>
-            <div class="value" id="roi">—</div>
-            <div class="sub" id="roiDetail">Revenue lift vs monthly cost</div>
-          </div>
+    <!-- Results -->
+    <section class="card" aria-labelledby="resultsTitle">
+      <h2 id="resultsTitle">Results</h2>
+      <div class="kpis">
+        <div class="kpi">
+          <div class="label">Additional Clients / Month</div>
+          <div class="value" id="addJobs">—</div>
+          <div class="sub" id="jobsDetail">From improved close rate</div>
         </div>
-
-        <div class="tier">
-          <div class="box">
-            <div class="label">Break-even Extra Clients Needed</div>
-            <div class="value" id="breakeven">—</div>
-            <div class="sub">How many extra bookings to cover your plan</div>
-          </div>
-          <div class="box">
-            <div class="label">Current → With AutoCloser</div>
-            <div class="value" id="rateChange">—</div>
-            <div class="sub" id="rateChangeSub">Close rate improvement</div>
-          </div>
+        <div class="kpi">
+          <div class="label">Extra Revenue / Month</div>
+          <div class="value" id="extraRevenue">—</div>
+          <div class="sub" id="revDetail">Based on your average client value</div>
         </div>
-
-        <p class="note">Assumes consistent lead volume and that faster, persistent follow-up increases conversions. Actual results vary by market, team, seasonality.</p>
+        <div class="kpi">
+          <div class="label">Recommended Plan</div>
+          <div class="value" id="planName">—</div>
+          <div class="sub" id="planDetail">AutoCloser tier & price</div>
+        </div>
+        <div class="kpi">
+          <div class="label">ROI</div>
+          <div class="value" id="roi">—</div>
+          <div class="sub" id="roiDetail">Revenue lift vs monthly cost</div>
+        </div>
       </div>
+      <p class="note">Assumes consistent lead volume and that faster, persistent follow-up increases conversions. Actual results vary by market, team, seasonality.</p>
     </section>
   </main>
 
-  <footer>
-    Ready to automate follow-ups and stop losing jobs? <a class="cta" href="https://autocloserhq.com" target="_blank" rel="noopener">Get AutoCloser</a>
-    or email <a class="cta" href="mailto:autocloserhq@gmail.com">autocloserhq@gmail.com</a> to book a live demo.
-  </footer>
-
   <script>
-    const fmtUSD = (n)=> n.toLocaleString(undefined,{ style:'currency', currency:'USD', maximumFractionDigits:0 });
-    const clamp = (n, min, max)=> Math.min(Math.max(n, min), max);
+    const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
+    const clamp = (n,min,max) => Math.min(Math.max(n,min),max);
 
     function planForLeads(leads){
-      // Pricing tiers discussed with Derrick: Starter up to 100, Pro up to 250, Elite 500+
-      if (leads <= 100) return { name: 'Starter', price: 487 };
-      if (leads <= 250) return { name: 'Pro', price: 997 };
-      // For 251+ we recommend Elite. If you later add a 750 tier, adjust here.
-      return { name: 'Elite', price: 1497 };
+      if (leads <= 100) return { name:'Starter', price:487 };
+      if (leads <= 250) return { name:'Pro',     price:997 };
+      return { name:'Elite', price:1497 };
     }
 
     function calc(){
-      const avg = Number(document.getElementById('avgValue').value);
-      const leads = Number(document.getElementById('leads').value);
-      const rateNow = clamp(Number(document.getElementById('rateNow').value), 0, 100);
-      const rateWith = clamp(Number(document.getElementById('rateWith').value), 0, 100);
-      const err = document.getElementById('error');
-      err.textContent = '';
+      const avg  = Number(document.getElementById('avgValue').value);
+      const leads= Number(document.getElementById('leads').value);
+      const now  = clamp(Number(document.getElementById('rateNow').value),  0,100);
+      const withA= clamp(Number(document.getElementById('rateWith').value), 0,100);
 
-      if (!isFinite(avg) || avg <= 0 || !isFinite(leads) || leads < 0) {
-        err.textContent = 'Please enter valid numbers for Average Move Value and Leads.';
-        return;
-      }
-      if (rateWith < rateNow) {
-        err.textContent = 'Close rate with AutoCloser should be >= current rate (or equal).';
-        return;
-      }
-
-      const jobsNow = leads * (rateNow/100);
-      const jobsWith = leads * (rateWith/100);
-      const addJobs = Math.max(0, jobsWith - jobsNow);
-      const extraRevenue = addJobs * avg;
+      const jobsNow  = leads * (now/100);
+      const jobsWith = leads * (withA/100);
+      const addJobs  = Math.max(0, jobsWith - jobsNow);
+      const extraRev = addJobs * avg;
 
       const plan = planForLeads(leads);
-      const roi = plan.price > 0 ? (extraRevenue / plan.price) * 100 : 0;
-      const breakeven = plan.price > 0 && avg > 0 ? Math.ceil(plan.price / avg) : 0;
+      const roi  = plan.price ? (extraRev/plan.price)*100 : 0;
 
-      // Write
-      document.getElementById('addJobs').textContent = addJobs.toFixed(1).replace(/\.0$/, '');
-      document.getElementById('jobsDetail').textContent = `From ${rateNow}% → ${rateWith}% over ${leads} leads`;
+      document.getElementById('addJobs').textContent   = addJobs.toFixed(1).replace(/\.0$/, '');
+      document.getElementById('jobsDetail').textContent= `From ${now}% → ${withA}% over ${leads} leads`;
 
-      document.getElementById('extraRevenue').textContent = fmtUSD(extraRevenue);
-      document.getElementById('revDetail').textContent = `${addJobs.toFixed(1).replace(/\.0$/, '')} extra jobs × ${fmtUSD(avg)} avg`;
+      document.getElementById('extraRevenue').textContent = fmtUSD(extraRev);
+      document.getElementById('revDetail').textContent    = `${addJobs.toFixed(1).replace(/\.0$/, '')} extra clients × ${fmtUSD(avg)} avg`;
 
-      document.getElementById('planName').textContent = `${plan.name}`;
-      document.getElementById('planDetail').textContent = `${fmtUSD(plan.price)} / mo`;
+      document.getElementById('planName').textContent  = plan.name;
+      document.getElementById('planDetail').textContent= `${fmtUSD(plan.price)} / mo`;
 
-      document.getElementById('roi').textContent = isFinite(roi) ? `${Math.round(roi).toLocaleString()}%` : '—';
-      document.getElementById('roiDetail').textContent = `${fmtUSD(extraRevenue)} lift vs ${fmtUSD(plan.price)} plan`;
-
-      document.getElementById('breakeven').textContent = breakeven.toString();
-      document.getElementById('rateChange').textContent = `${rateNow}% → ${rateWith}%`;
-      const delta = rateWith - rateNow;
-      document.getElementById('rateChangeSub').textContent = delta >= 0 ? `+${delta}% improvement` : `${delta}% change`;
+      document.getElementById('roi').textContent       = `${Math.round(roi).toLocaleString()}%`;
+      document.getElementById('roiDetail').textContent = `${fmtUSD(extraRev)} lift vs ${fmtUSD(plan.price)} plan`;
     }
 
     document.getElementById('calc').addEventListener('click', calc);
     document.getElementById('reset').addEventListener('click', ()=>{
       document.getElementById('avgValue').value = 3000;
-      document.getElementById('leads').value = 100;
-      document.getElementById('rateNow').value = 30;
+      document.getElementById('leads').value    = 100;
+      document.getElementById('rateNow').value  = 30;
       document.getElementById('rateWith').value = 40;
-      document.getElementById('error').textContent = '';
-      document.querySelectorAll('#addJobs,#extraRevenue,#planName,#roi,#breakeven,#rateChange').forEach(el=> el.textContent = '—');
+      document.querySelectorAll('#addJobs,#extraRevenue,#planName,#roi').forEach(el=>el.textContent='—');
       document.getElementById('jobsDetail').textContent = 'From improved close rate';
-      document.getElementById('revDetail').textContent = 'Based on your average move value';
+      document.getElementById('revDetail').textContent  = 'Based on your average client value';
       document.getElementById('planDetail').textContent = 'AutoCloser tier & price';
-      document.getElementById('roiDetail').textContent = 'Revenue lift vs monthly cost';
-      document.getElementById('rateChangeSub').textContent = 'Close rate improvement';
+      document.getElementById('roiDetail').textContent  = 'Revenue lift vs monthly cost';
     });
 
-    // Auto-run once on load
-    calc();
+    calc(); // run once on load
   </script>
 </body>
 </html>
