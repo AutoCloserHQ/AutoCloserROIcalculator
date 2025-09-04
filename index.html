@@ -29,6 +29,20 @@
         radial-gradient(1000px 800px at -10% 110%, rgba(155,232,255,.15), transparent 60%),
         var(--bg);
     }
+     body.embed { background: transparent !important; }
+  </style>
+
+  <script>
+    (function(){
+      const p = new URLSearchParams(location.search);
+      if (p.get('embed') === '1') {
+        document.addEventListener('DOMContentLoaded', () => {
+          document.body.classList.add('embed');
+        });
+      }
+    })();
+  </script>
+</head>
     header { max-width: 1100px; margin: 40px auto 10px; padding: 0 20px; }
     header h1 { font-size: 2rem; margin: 0; letter-spacing: .4px; }
     header p { color: var(--muted); margin: 8px 0 0; }
