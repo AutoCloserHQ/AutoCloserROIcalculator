@@ -13,7 +13,6 @@
       --radius:16px; --shadow:0 10px 25px rgba(0,0,0,.35);
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
       margin:0;
       font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,"Helvetica Neue",Arial,"Noto Sans";
@@ -23,18 +22,16 @@
         radial-gradient(1000px 800px at -10% 110%, rgba(155,232,255,.15), transparent 60%),
         var(--bg);
     }
-    /* transparent when embedded */
-    body.embed{background:transparent!important}
+    /* transparent background when embedded with ?embed=1 */
+    body.embed{ background:transparent !important; }
 
-    /* --- centered page container (compact) --- */
+    /* --- centered layout (compact, no bottom gap) --- */
     header{max-width:900px;margin:24px auto 8px;padding:0 20px;text-align:center}
     header h1{margin:0 0 4px;font-size:1.9rem;color:var(--accent)}
     header p{margin:0;color:var(--muted);font-size:.95rem}
 
     main.wrap{
-      max-width:900px;
-      margin:0 auto 0;          /* << no bottom margin */
-      padding:0 20px 0;         /* << no bottom padding */
+      max-width:900px; margin:0 auto 0; padding:0 20px 0;
       display:grid; gap:18px;
     }
     @media (min-width:900px){ main.wrap{ grid-template-columns:1fr 1fr; } }
@@ -44,7 +41,7 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      padding:16px;             /* tighter */
+      padding:16px;
     }
     .card h2{margin:0 0 12px;font-size:.92rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2)}
 
@@ -72,6 +69,8 @@
     input[type="number"]{-moz-appearance:textfield}
     @media (max-width:520px){ input[type="number"]{ font-size:1.12rem; padding:16px } }
 
+    .hint{ font-size:.8rem; color:var(--muted); margin-top:6px; }
+
     .actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
     button{
       background:linear-gradient(180deg,var(--accent),#1a9fc2);
@@ -89,9 +88,8 @@
     .kpi .sub{color:var(--muted);font-size:.84rem;margin-top:2px}
     .note{margin-top:8px;color:var(--muted);font-size:.85rem;text-align:center}
 
-    /* absolutely no extra space at the bottom */
+    /* no extra space at bottom */
     .wrap > .card:last-child{ margin-bottom:0 }
-    body{ padding-bottom:0 }
   </style>
 
   <!-- embed helper -->
@@ -131,6 +129,7 @@
         <div class="control">
           <div class="label">Close Rate with AutoCloser (%)</div>
           <input id="rateWith" type="number" inputmode="numeric" value="40" />
+          <div class="hint" id="rateHint">Typically +5–15% lift vs your current close rate</div>
         </div>
       </div>
       <div class="actions">
@@ -169,8 +168,11 @@
   </main>
 
   <script>
+    const $ = (id)=> document.getElementById(id);
     const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
     const clamp  = (n,min,max) => Math.min(Math.max(n,min),max);
+
+    let userEditedRateWith = false; // track if user manually changed the "with AutoCloser" field
 
     function planForLeads(leads){
       if (leads <= 100) return { name:'Starter', price:487 };
@@ -178,11 +180,19 @@
       return { name:'Elite', price:1497 };
     }
 
+    function updateRateHint(){
+      const now = Number($('rateNow').value);
+      if (isNaN(now)) return;
+      const low = Math.min(now + 5, 100);
+      const high = Math.min(now + 15, 100);
+      $('rateHint').textContent = `Typically +5–15% lift vs your current close rate (try ${low}%–${high}%)`;
+    }
+
     function calc(){
-      const avg   = Number(document.getElementById('avgValue').value);
-      const leads = Number(document.getElementById('leads').value);
-      const now   = clamp(Number(document.getElementById('rateNow').value),  0,100);
-      const withA = clamp(Number(document.getElementById('rateWith').value), 0,100);
+      const avg   = Number($('avgValue').value);
+      const leads = Number($('leads').value);
+      const now   = clamp(Number($('rateNow').value),  0,100);
+      const withA = clamp(Number($('rateWith').value), 0,100);
 
       const jobsNow  = leads * (now/100);
       const jobsWith = leads * (withA/100);
@@ -192,32 +202,63 @@
       const plan = planForLeads(leads);
       const roi  = plan.price ? (extraRev/plan.price)*100 : 0;
 
-      document.getElementById('addJobs').textContent    = addJobs.toFixed(1).replace(/\.0$/,'');
-      document.getElementById('jobsDetail').textContent = `From ${now}% → ${withA}% over ${leads} leads`;
+      $('addJobs').textContent    = addJobs.toFixed(1).replace(/\.0$/,'');
+      $('jobsDetail').textContent = `From ${now}% → ${withA}% over ${leads} leads`;
 
-      document.getElementById('extraRevenue').textContent = fmtUSD(extraRev);
-      document.getElementById('revDetail').textContent    = `${addJobs.toFixed(1).replace(/\.0$/,'')} extra clients × ${fmtUSD(avg)} avg`;
+      $('extraRevenue').textContent = fmtUSD(extraRev);
+      $('revDetail').textContent    = `${addJobs.toFixed(1).replace(/\.0$/,'')} extra clients × ${fmtUSD(avg)} avg`;
 
-      document.getElementById('planName').textContent   = plan.name;
-      document.getElementById('planDetail').textContent = `${fmtUSD(plan.price)} / mo`;
+      $('planName').textContent   = plan.name;
+      $('planDetail').textContent = `${fmtUSD(plan.price)} / mo`;
 
-      document.getElementById('roi').textContent        = `${Math.round(roi).toLocaleString()}%`;
-      document.getElementById('roiDetail').textContent  = `${fmtUSD(extraRev)} lift vs ${fmtUSD(plan.price)} plan`;
+      $('roi').textContent        = `${Math.round(roi).toLocaleString()}%`;
+      $('roiDetail').textContent  = `${fmtUSD(extraRev)} lift vs ${fmtUSD(plan.price)} plan`;
     }
 
-    document.getElementById('calc').addEventListener('click', calc);
-    document.getElementById('reset').addEventListener('click', ()=>{
-      document.getElementById('avgValue').value = 3000;
-      document.getElementById('leads').value    = 100;
-      document.getElementById('rateNow').value  = 30;
-      document.getElementById('rateWith').value = 40;
-      document.querySelectorAll('#addJobs,#extraRevenue,#planName,#roi').forEach(el=> el.textContent='—');
-      document.getElementById('jobsDetail').textContent = 'From improved close rate';
-      document.getElementById('revDetail').textContent  = 'Based on your average client value';
-      document.getElementById('planDetail').textContent = 'AutoCloser tier & price';
-      document.getElementById('roiDetail').textContent  = 'Revenue lift vs monthly cost';
+    // Auto-prefill: when Current Close Rate changes, prefill Rate With to +10% (unless user already edited it)
+    $('rateNow').addEventListener('input', () => {
+      const now = Number($('rateNow').value);
+      if (!isNaN(now) && now >= 0 && !userEditedRateWith) {
+        $('rateWith').value = Math.min(now + 10, 100);
+      }
+      updateRateHint();
+      calc();
     });
 
+    // If the user edits "with AutoCloser", stop auto-prefill
+    $('rateWith').addEventListener('input', () => {
+      userEditedRateWith = true;
+      calc();
+    });
+
+    // Other inputs recalc live
+    ['avgValue','leads'].forEach(id => {
+      $(id).addEventListener('input', calc);
+    });
+
+    // Reset button
+    $('reset').addEventListener('click', ()=>{
+      $('avgValue').value = 3000;
+      $('leads').value    = 100;
+      $('rateNow').value  = 30;
+      $('rateWith').value = 40;
+      userEditedRateWith = false;
+      $('rateHint').textContent = 'Typically +5–15% lift vs your current close rate';
+      ['addJobs','extraRevenue','planName','roi'].forEach(id=> $(id).textContent='—');
+      $('jobsDetail').textContent = 'From improved close rate';
+      $('revDetail').textContent  = 'Based on your average client value';
+      $('planDetail').textContent = 'AutoCloser tier & price';
+      $('roiDetail').textContent  = 'Revenue lift vs monthly cost';
+    });
+
+    // Embed helper: add .embed class if ?embed=1
+    (function(){
+      const p=new URLSearchParams(location.search);
+      if(p.get('embed')==='1'){ document.body.classList.add('embed'); }
+    })();
+
+    // First paint
+    updateRateHint();
     calc();
   </script>
 </body>
