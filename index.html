@@ -12,28 +12,30 @@
       --accent:#31d0ff; --accent-2:#9be8ff; --text:#f3f6ff; --muted:#a7b1c8;
       --radius:16px; --shadow:0 10px 25px rgba(0,0,0,.35);
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans";
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,"Helvetica Neue",Arial,"Noto Sans";
       color:var(--text);
       background:
         radial-gradient(1200px 600px at 80% -10%, rgba(49,208,255,.2), transparent 60%),
         radial-gradient(1000px 800px at -10% 110%, rgba(155,232,255,.15), transparent 60%),
         var(--bg);
     }
-    /* make background transparent when embedded via ?embed=1 */
-    body.embed { background: transparent !important; }
+    /* transparent when embedded */
+    body.embed{background:transparent!important}
 
-    /* --- centered page container --- */
-    header{max-width:900px;margin:40px auto 14px;padding:0 20px;text-align:center}
-    header h1{margin:0 0 6px;font-size:2.05rem;color:var(--accent)}
-    header p{margin:0;color:var(--muted)}
+    /* --- centered page container (compact) --- */
+    header{max-width:900px;margin:24px auto 8px;padding:0 20px;text-align:center}
+    header h1{margin:0 0 4px;font-size:1.9rem;color:var(--accent)}
+    header p{margin:0;color:var(--muted);font-size:.95rem}
 
     main.wrap{
-      max-width:900px; margin:0 auto 60px; padding:0 20px;
-      display:grid; gap:24px;
+      max-width:900px;
+      margin:0 auto 0;          /* << no bottom margin */
+      padding:0 20px 0;         /* << no bottom padding */
+      display:grid; gap:18px;
     }
     @media (min-width:900px){ main.wrap{ grid-template-columns:1fr 1fr; } }
 
@@ -42,60 +44,62 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      padding:22px;
+      padding:16px;             /* tighter */
     }
-    .card h2{margin:0 0 16px;font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2)}
+    .card h2{margin:0 0 12px;font-size:.92rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2)}
 
     /* inputs */
-    .grid{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
     @media (max-width:620px){ .grid{ grid-template-columns:1fr } }
 
     .control{
       display:flex;flex-direction:column;justify-content:flex-start;
       background:var(--panel-2);
       border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;padding:14px;
-      min-height:116px; /* keeps rows even if labels wrap */
+      border-radius:14px;padding:12px;
+      min-height:104px;
     }
-    .label{font-size:.9rem;font-weight:700;margin-bottom:10px;line-height:1.2}
+    .label{font-size:.9rem;font-weight:700;margin-bottom:8px;line-height:1.2}
 
     input[type="number"]{
       width:100%;appearance:textfield;background:#0d1430;
       border:1px solid rgba(255,255,255,.16);color:var(--text);
-      border-radius:12px;padding:18px 20px;font-size:1.15rem;line-height:1.2;min-height:58px;outline:none
+      border-radius:12px;padding:14px 16px;font-size:1.08rem;min-height:50px;outline:none
     }
     input[type="number"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(49,208,255,.18)}
     input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
-    input[type="number"]{ -moz-appearance:textfield; }
-    @media (max-width:520px){ input[type="number"]{ font-size:1.2rem; padding:20px } }
+    input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    input[type="number"]{-moz-appearance:textfield}
+    @media (max-width:520px){ input[type="number"]{ font-size:1.12rem; padding:16px } }
 
-    .actions{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
+    .actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
     button{
       background:linear-gradient(180deg,var(--accent),#1a9fc2);
-      color:#041018;border:none;padding:14px 18px;border-radius:12px;font-weight:800;cursor:pointer;
+      color:#041018;border:none;padding:12px 14px;border-radius:12px;font-weight:800;cursor:pointer;
       box-shadow:0 8px 18px rgba(49,208,255,.25)
     }
     button.secondary{background:transparent;color:var(--accent-2);border:1px solid rgba(155,232,255,.45);box-shadow:none}
 
-    /* results */
-    .kpis{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+    /* results (compact) */
+    .kpis{display:grid;gap:12px;grid-template-columns:1fr 1fr}
     @media (max-width:620px){ .kpis{ grid-template-columns:1fr } }
-    .kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
-    .kpi .label{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.12em}
-    .kpi .value{font-size:1.5rem;font-weight:900;margin-top:6px}
-    .kpi .sub{color:var(--muted);font-size:.86rem;margin-top:4px}
-    .note{margin-top:12px;color:var(--muted);font-size:.9rem;text-align:center}
+    .kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
+    .kpi .label{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.12em}
+    .kpi .value{font-size:1.4rem;font-weight:900;margin-top:4px}
+    .kpi .sub{color:var(--muted);font-size:.84rem;margin-top:2px}
+    .note{margin-top:8px;color:var(--muted);font-size:.85rem;text-align:center}
+
+    /* absolutely no extra space at the bottom */
+    .wrap > .card:last-child{ margin-bottom:0 }
+    body{ padding-bottom:0 }
   </style>
 
-  <!-- embed helper: add .embed when ?embed=1 -->
+  <!-- embed helper -->
   <script>
     (function(){
-      const p = new URLSearchParams(location.search);
-      if (p.get('embed') === '1') {
-        document.addEventListener('DOMContentLoaded', () => {
-          document.body.classList.add('embed');
-        });
+      const p=new URLSearchParams(location.search);
+      if(p.get('embed')==='1'){
+        document.addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));
       }
     })();
   </script>
@@ -166,7 +170,7 @@
 
   <script>
     const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
-    const clamp = (n,min,max) => Math.min(Math.max(n,min),max);
+    const clamp  = (n,min,max) => Math.min(Math.max(n,min),max);
 
     function planForLeads(leads){
       if (leads <= 100) return { name:'Starter', price:487 };
@@ -175,10 +179,10 @@
     }
 
     function calc(){
-      const avg  = Number(document.getElementById('avgValue').value);
-      const leads= Number(document.getElementById('leads').value);
-      const now  = clamp(Number(document.getElementById('rateNow').value),  0,100);
-      const withA= clamp(Number(document.getElementById('rateWith').value), 0,100);
+      const avg   = Number(document.getElementById('avgValue').value);
+      const leads = Number(document.getElementById('leads').value);
+      const now   = clamp(Number(document.getElementById('rateNow').value),  0,100);
+      const withA = clamp(Number(document.getElementById('rateWith').value), 0,100);
 
       const jobsNow  = leads * (now/100);
       const jobsWith = leads * (withA/100);
@@ -188,17 +192,17 @@
       const plan = planForLeads(leads);
       const roi  = plan.price ? (extraRev/plan.price)*100 : 0;
 
-      document.getElementById('addJobs').textContent   = addJobs.toFixed(1).replace(/\.0$/, '');
-      document.getElementById('jobsDetail').textContent= `From ${now}% → ${withA}% over ${leads} leads`;
+      document.getElementById('addJobs').textContent    = addJobs.toFixed(1).replace(/\.0$/,'');
+      document.getElementById('jobsDetail').textContent = `From ${now}% → ${withA}% over ${leads} leads`;
 
       document.getElementById('extraRevenue').textContent = fmtUSD(extraRev);
-      document.getElementById('revDetail').textContent    = `${addJobs.toFixed(1).replace(/\.0$/, '')} extra clients × ${fmtUSD(avg)} avg`;
+      document.getElementById('revDetail').textContent    = `${addJobs.toFixed(1).replace(/\.0$/,'')} extra clients × ${fmtUSD(avg)} avg`;
 
-      document.getElementById('planName').textContent  = plan.name;
-      document.getElementById('planDetail').textContent= `${fmtUSD(plan.price)} / mo`;
+      document.getElementById('planName').textContent   = plan.name;
+      document.getElementById('planDetail').textContent = `${fmtUSD(plan.price)} / mo`;
 
-      document.getElementById('roi').textContent       = `${Math.round(roi).toLocaleString()}%`;
-      document.getElementById('roiDetail').textContent = `${fmtUSD(extraRev)} lift vs ${fmtUSD(plan.price)} plan`;
+      document.getElementById('roi').textContent        = `${Math.round(roi).toLocaleString()}%`;
+      document.getElementById('roiDetail').textContent  = `${fmtUSD(extraRev)} lift vs ${fmtUSD(plan.price)} plan`;
     }
 
     document.getElementById('calc').addEventListener('click', calc);
@@ -207,14 +211,14 @@
       document.getElementById('leads').value    = 100;
       document.getElementById('rateNow').value  = 30;
       document.getElementById('rateWith').value = 40;
-      document.querySelectorAll('#addJobs,#extraRevenue,#planName,#roi').forEach(el=>el.textContent='—');
+      document.querySelectorAll('#addJobs,#extraRevenue,#planName,#roi').forEach(el=> el.textContent='—');
       document.getElementById('jobsDetail').textContent = 'From improved close rate';
       document.getElementById('revDetail').textContent  = 'Based on your average client value';
       document.getElementById('planDetail').textContent = 'AutoCloser tier & price';
       document.getElementById('roiDetail').textContent  = 'Revenue lift vs monthly cost';
     });
 
-    calc(); // run once on load
+    calc();
   </script>
 </body>
 </html>
