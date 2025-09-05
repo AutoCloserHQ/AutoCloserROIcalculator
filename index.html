@@ -106,7 +106,7 @@
 <body>
   <header>
     <h1>AutoCloser ROI Calculator</h1>
-    <p>Estimate your additional booked clients and ROI when AutoCloser follows up on every lead (Day 0, 1, 3, 5) by SMS & email.</p>
+    <p>Estimate your additional booked clients and ROI when AutoCloser follows up on every lead (Day 0, 1, 3, 5) by SMS &amp; email.</p>
   </header>
 
   <main class="wrap">
@@ -139,7 +139,7 @@
     </section>
 
     <!-- Results -->
-    <section class="card" aria-labelledby="resultsTitle">
+    <section class="card" id="resultsCard" aria-labelledby="resultsTitle" hidden>
       <h2 id="resultsTitle">Results</h2>
       <div class="kpis">
         <div class="kpi">
@@ -155,7 +155,7 @@
         <div class="kpi">
           <div class="label">Recommended Plan</div>
           <div class="value" id="planName">—</div>
-          <div class="sub" id="planDetail">AutoCloser tier & price</div>
+          <div class="sub" id="planDetail">AutoCloser tier &amp; price</div>
         </div>
         <div class="kpi">
           <div class="label">ROI</div>
@@ -172,7 +172,8 @@
     const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
     const clamp  = (n,min,max) => Math.min(Math.max(n,min),max);
 
-    let userEditedRateWith = false; // track if user manually changed the "with AutoCloser" field
+    let userEditedRateWith = false; // track manual edits to "with AutoCloser"
+    let hasCalculated = false;      // gate rendering until Calculate is clicked
 
     function planForLeads(leads){
       if (leads <= 100) return { name:'Starter', price:487 };
@@ -213,36 +214,46 @@
 
       $('roi').textContent        = `${Math.round(roi).toLocaleString()}%`;
       $('roiDetail').textContent  = `${fmtUSD(extraRev)} lift vs ${fmtUSD(plan.price)} plan`;
+
+      // reveal results after first calculation
+      hasCalculated = true;
+      $('resultsCard').hidden = false;
     }
 
-    // Auto-prefill: when Current Close Rate changes, prefill Rate With to +10% (unless user already edited it)
+    // Inputs: update hints/prefill and ONLY recalc after first click
     $('rateNow').addEventListener('input', () => {
       const now = Number($('rateNow').value);
       if (!isNaN(now) && now >= 0 && !userEditedRateWith) {
         $('rateWith').value = Math.min(now + 10, 100);
       }
       updateRateHint();
-      calc();
+      if (hasCalculated) calc();
     });
 
-    // If the user edits "with AutoCloser", stop auto-prefill
     $('rateWith').addEventListener('input', () => {
       userEditedRateWith = true;
-      calc();
+      if (hasCalculated) calc();
     });
 
-    // Other inputs recalc live
     ['avgValue','leads'].forEach(id => {
-      $(id).addEventListener('input', calc);
+      $(id).addEventListener('input', () => {
+        if (hasCalculated) calc();
+      });
     });
 
-    // Reset button
+    // Calculate button triggers the first compute
+    $('calc').addEventListener('click', calc);
+
+    // Reset: restore defaults & hide results
     $('reset').addEventListener('click', ()=>{
       $('avgValue').value = 3000;
       $('leads').value    = 100;
       $('rateNow').value  = 30;
       $('rateWith').value = 40;
       userEditedRateWith = false;
+      hasCalculated = false;
+      $('resultsCard').hidden = true;
+
       $('rateHint').textContent = 'Typically +5–15% lift vs your current close rate';
       ['addJobs','extraRevenue','planName','roi'].forEach(id=> $(id).textContent='—');
       $('jobsDetail').textContent = 'From improved close rate';
@@ -257,9 +268,8 @@
       if(p.get('embed')==='1'){ document.body.classList.add('embed'); }
     })();
 
-    // First paint
+    // Initial paint: only update hint; DO NOT auto-calc
     updateRateHint();
-    calc();
   </script>
 </body>
 </html>
